@@ -40,9 +40,7 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
         _token = token;
       });
       if (widget.isCreateLiveStream) {
-        final livestreamId = "lsds-x0fj-p1rf";
-        // await createLiveStream(token);
-
+        final livestreamId = await createLiveStream(token);
         setState(() {
           livestreamIdTextController.value =
               TextEditingValue(text: livestreamId);
