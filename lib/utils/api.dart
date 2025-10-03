@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+final String? _VIDEOSDK_API_ENDPOINT = "https://api.videosdk.live/v2";
 Future<String> fetchToken(BuildContext context) async {
   if (!dotenv.isInitialized) {
     // Load Environment variables
@@ -17,14 +18,13 @@ Future<String> fetchToken(BuildContext context) async {
 }
 
 Future<String> createLiveStream(String _token) async {
-  final String? _VIDEOSDK_API_ENDPOINT = "https://api.videosdk.live/v2/rooms";
-
+  print("token:$_token");
   final Uri getLivestreamIdUrl = Uri.parse('$_VIDEOSDK_API_ENDPOINT/rooms');
   final http.Response livestreamIdResponse =
       await http.post(getLivestreamIdUrl, headers: {
     "Authorization": _token,
   });
-
+  print("response:${livestreamIdResponse.body}");
   if (livestreamIdResponse.statusCode != 200) {
     throw Exception(json.decode(livestreamIdResponse.body)["error"]);
   }
@@ -33,8 +33,6 @@ Future<String> createLiveStream(String _token) async {
 }
 
 Future<bool> validateLivestream(String token, String livestreamId) async {
-  final String? _VIDEOSDK_API_ENDPOINT = dotenv.env['VIDEOSDK_API_ENDPOINT'];
-
   final Uri validateLivestreamUrl =
       Uri.parse('$_VIDEOSDK_API_ENDPOINT/rooms/validate/$livestreamId');
   final http.Response validateLivestreamResponse =
@@ -50,8 +48,6 @@ Future<bool> validateLivestream(String token, String livestreamId) async {
 }
 
 Future<dynamic> fetchSession(String token, String livestreamId) async {
-  final String? _VIDEOSDK_API_ENDPOINT = dotenv.env['VIDEOSDK_API_ENDPOINT'];
-
   final Uri getlivestreamIdUrl =
       Uri.parse('$_VIDEOSDK_API_ENDPOINT/sessions?roomId=$livestreamId');
   final http.Response livestreamIdResponse =
@@ -63,8 +59,6 @@ Future<dynamic> fetchSession(String token, String livestreamId) async {
 }
 
 Future<dynamic> fetchActiveHls(String token, String livestreamId) async {
-  final String? _VIDEOSDK_API_ENDPOINT = dotenv.env['VIDEOSDK_API_ENDPOINT'];
-
   final Uri getActiveHlsUrl =
       Uri.parse('$_VIDEOSDK_API_ENDPOINT/hls/$livestreamId/active');
   final http.Response response = await http.get(getActiveHlsUrl, headers: {
