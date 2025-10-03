@@ -80,8 +80,6 @@ class _ParticipantListState extends State<ParticipantList> {
                                   Mode.SEND_AND_RECV
                               ? "RECV_ONLY"
                               : "SEND_AND_RECV");
-                      print(
-                          "_participants.values.elementAt(index).mode ${_participants.values.elementAt(index).mode}");
                     } else if (value == "Remove Participant") {
                       log("Selected remove participnt");
 

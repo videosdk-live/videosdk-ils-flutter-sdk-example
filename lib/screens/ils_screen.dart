@@ -100,8 +100,6 @@ class _ILSScreenState extends State<ILSScreen> {
           livestream = _livestream;
           localParticipantMode = _livestream.localParticipant.mode;
           _joined = true;
-          print(
-              "Helloo my self jay Shah I am inside the setlivestream Listerner ${livestream.localParticipant.mode}");
         });
         registerModeListener(_livestream);
       },
@@ -148,8 +146,6 @@ class _ILSScreenState extends State<ILSScreen> {
       String message = pubSubMessage.message;
       if (mounted) {
         if (message == "SEND_AND_RECV") {
-          print("helooooooo I am inside the send and recive condition!!!!");
-
           showDialog(
               context: context,
               builder: (context) {

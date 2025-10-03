@@ -18,13 +18,11 @@ Future<String> fetchToken(BuildContext context) async {
 }
 
 Future<String> createLiveStream(String _token) async {
-  print("token:$_token");
   final Uri getLivestreamIdUrl = Uri.parse('$_VIDEOSDK_API_ENDPOINT/rooms');
   final http.Response livestreamIdResponse =
       await http.post(getLivestreamIdUrl, headers: {
     "Authorization": _token,
   });
-  print("response:${livestreamIdResponse.body}");
   if (livestreamIdResponse.statusCode != 200) {
     throw Exception(json.decode(livestreamIdResponse.body)["error"]);
   }

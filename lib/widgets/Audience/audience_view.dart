@@ -90,9 +90,7 @@ class _AudienceViewState extends State<AudienceView> {
   }
 
   void registerLivestreamEvents(Room _livestream) {
-    _livestream.on(Events.participantModeChanged, (participant) {
-      print("Participant mode : ${_livestream.participants.values}");
-    });
+    _livestream.on(Events.participantModeChanged, (participant) {});
     _livestream.on(Events.participantJoined, (participant) {
       setState(() {
         participants = _livestream.participants.length + 1;
