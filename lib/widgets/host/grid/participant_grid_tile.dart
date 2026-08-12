@@ -138,25 +138,42 @@ class _ParticipantGridTileState extends State<ParticipantGridTile> {
       });
     });
 
-    widget.participant.on(Events.streamPaused, (Stream _stream) {
+    // The SDK emits Events.streamPaused/streamResumed with either a Stream
+    // (local pause/resume) or a String kind + reason (subs-manager pause/resume),
+    // so both possible callback shapes must be handled here.
+    widget.participant.on(Events.streamPaused, (dynamic arg0, [dynamic arg1]) {
+      final stream = _resolveStream(arg0);
+      if (stream == null) return;
       setState(() {
-        if (_stream.kind == 'video' && videoStream?.id == _stream.id) {
+        if (stream.kind == 'video' && videoStream?.id == stream.id) {
           videoStream = null;
-        } else if (_stream.kind == 'audio' && audioStream?.id == _stream.id) {
-          audioStream = _stream;
+        } else if (stream.kind == 'audio' && audioStream?.id == stream.id) {
+          audioStream = stream;
         }
       });
     });
 
-    widget.participant.on(Events.streamResumed, (Stream _stream) {
+    widget.participant.on(Events.streamResumed, (dynamic arg0, [dynamic arg1]) {
+      final stream = _resolveStream(arg0);
+      if (stream == null) return;
       setState(() {
-        if (_stream.kind == 'video' && videoStream?.id == _stream.id) {
-          videoStream = _stream;
+        if (stream.kind == 'video' && videoStream?.id == stream.id) {
+          videoStream = stream;
           widget.participant.setQuality(widget.quality);
-        } else if (_stream.kind == 'audio' && audioStream?.id == _stream.id) {
-          audioStream = _stream;
+        } else if (stream.kind == 'audio' && audioStream?.id == stream.id) {
+          audioStream = stream;
         }
       });
     });
+  }
+
+  Stream? _resolveStream(dynamic arg0) {
+    if (arg0 is Stream) return arg0;
+    if (arg0 is String) {
+      for (final stream in widget.participant.streams.values) {
+        if (stream.kind == arg0) return stream;
+      }
+    }
+    return null;
   }
 }

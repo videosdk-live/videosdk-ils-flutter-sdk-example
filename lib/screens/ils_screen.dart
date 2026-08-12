@@ -119,10 +119,11 @@ class _ILSScreenState extends State<ILSScreen> {
     });
 
     // Called when livestream is ended
-    _livestream.on(Events.roomLeft, (String? errorMsg) {
-      if (errorMsg != null) {
+    _livestream.on(Events.roomLeft, (LeaveReason? reason) {
+      if (reason != null) {
         showSnackBarMessage(
-            message: "Livestream left due to $errorMsg !!", context: context);
+            message: "Livestream left due to ${reason.message} !!",
+            context: context);
       }
       Navigator.pushAndRemoveUntil(
           context,
