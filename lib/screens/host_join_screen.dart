@@ -269,16 +269,16 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
   }
 
   Future<void> joinLivestream() async {
-    if (livestreamIdTextController.text.isEmpty) {
-      showSnackBarMessage(
-          message: "Please enter Valid Livestream ID", context: context);
-      return;
-    }
-    if (nameTextController.text.isEmpty) {
-      showSnackBarMessage(message: "Please enter Name", context: context);
-      return;
-    }
-    String livestreamId = livestreamIdTextController.text;
+    // if (livestreamIdTextController.text.isEmpty) {
+    //   showSnackBarMessage(
+    //       message: "Please enter Valid Livestream ID", context: context);
+    //   return;
+    // }
+    // if (nameTextController.text.isEmpty) {
+    //   showSnackBarMessage(message: "Please enter Name", context: context);
+    //   return;
+    // }
+    String livestreamId = "zei5-quxe-2s2f";
     String name = nameTextController.text;
     var validLivetream = await validateLivestream(_token, livestreamId);
     if (context.mounted) {
