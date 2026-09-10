@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:videosdk/videosdk.dart';
@@ -298,6 +300,9 @@ class _SpeakerViewState extends State<HostView> {
           }
         }
       }
+    }).catchError((Object e) {
+      log("Subscribe failed: $e");
+      return PubSubMessages(messages: const []);
     });
 
     livestream.pubSub.subscribe("RAISE_HAND", (message) {
@@ -314,6 +319,9 @@ class _SpeakerViewState extends State<HostView> {
           }
         }
       }
+    }).catchError((Object e) {
+      log("Subscribe failed: $e");
+      return PubSubMessages(messages: const []);
     });
   }
 

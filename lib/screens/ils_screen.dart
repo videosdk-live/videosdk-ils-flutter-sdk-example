@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:videosdk/videosdk.dart';
@@ -186,6 +187,9 @@ class _ILSScreenState extends State<ILSScreen> {
           _livestream.changeMode(Mode.RECV_ONLY);
         }
       }
+    }).catchError((Object e) {
+      log("Subscribe failed: $e");
+      return PubSubMessages(messages: const []);
     });
   }
 
