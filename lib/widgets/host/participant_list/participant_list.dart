@@ -79,7 +79,8 @@ class _ParticipantListState extends State<ParticipantList> {
                           _participants.values.elementAt(index).mode ==
                                   Mode.SEND_AND_RECV
                               ? "RECV_ONLY"
-                              : "SEND_AND_RECV");
+                              : "SEND_AND_RECV")
+                          .catchError((Object e) => log("Publish failed: $e"));
                     } else if (value == "Remove Participant") {
                       log("Selected remove participnt");
 
@@ -135,6 +136,9 @@ class _ParticipantListState extends State<ParticipantList> {
           participants.remove(message.senderId);
         });
       });
+    }).catchError((Object e) {
+      log("Subscribe failed: $e");
+      return PubSubMessages(messages: const []);
     });
   }
 }

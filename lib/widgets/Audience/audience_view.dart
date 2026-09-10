@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -141,6 +142,9 @@ class _AudienceViewState extends State<AudienceView> {
           }
         }
       }
+    }).catchError((Object e) {
+      log("Subscribe failed: $e");
+      return PubSubMessages(messages: const []);
     });
   }
 
