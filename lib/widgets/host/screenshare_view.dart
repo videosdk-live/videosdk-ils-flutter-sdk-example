@@ -16,18 +16,18 @@ class ScreenShareView extends StatefulWidget {
 
 class _ScreenShareViewState extends State<ScreenShareView> {
   Participant? _presenterParticipant;
-  Stream? shareStream;
+  RTCStream? shareStream;
   String? presenterId;
   bool isLocalScreenShare = false;
 
   @override
   void initState() {
-    _presenterParticipant = widget.livestream.activePresenterId != null
+    _presenterParticipant = widget.livestream.getActivePresenterId() != null
         ? widget.livestream.participants.values.firstWhere(
-            (element) => element.id == widget.livestream.activePresenterId)
+            (element) => element.id == widget.livestream.getActivePresenterId())
         : null;
 
-    if (widget.livestream.activePresenterId ==
+    if (widget.livestream.getActivePresenterId() ==
         widget.livestream.localParticipant.id) {
       _presenterParticipant = widget.livestream.localParticipant;
       isLocalScreenShare = true;
@@ -36,7 +36,7 @@ class _ScreenShareViewState extends State<ScreenShareView> {
     presenterId = _presenterParticipant?.id;
 
     shareStream = _presenterParticipant?.streams.values
-        .firstWhere((stream) => stream.kind == "share");
+        .firstWhere((stream) => stream.kind == MediaType.SHARE);
     setLivestreamListeners(widget.livestream);
     super.initState();
   }
@@ -123,16 +123,16 @@ class _ScreenShareViewState extends State<ScreenShareView> {
   }
 
   void setLivestreamListeners(Room _livestream) {
-    _livestream.localParticipant.on(Events.streamEnabled, (Stream stream) {
-      if (stream.kind == "share") {
+    _livestream.localParticipant.on(Events.streamEnabled, (RTCStream stream) {
+      if (stream.kind == MediaType.SHARE) {
         setState(() {
           isLocalScreenShare = true;
           shareStream = stream;
         });
       }
     });
-    _livestream.localParticipant.on(Events.streamDisabled, (Stream stream) {
-      if (stream.kind == "share") {
+    _livestream.localParticipant.on(Events.streamDisabled, (RTCStream stream) {
+      if (stream.kind == MediaType.SHARE) {
         setState(() {
           isLocalScreenShare = false;
           shareStream = null;
@@ -163,15 +163,15 @@ class _ScreenShareViewState extends State<ScreenShareView> {
   }
 
   addParticipantListener(Participant participant) {
-    participant.on(Events.streamEnabled, (Stream stream) {
-      if (stream.kind == "share") {
+    participant.on(Events.streamEnabled, (RTCStream stream) {
+      if (stream.kind == MediaType.SHARE) {
         setState(() {
           shareStream = stream;
         });
       }
     });
-    participant.on(Events.streamDisabled, (Stream stream) {
-      if (stream.kind == "share") {
+    participant.on(Events.streamDisabled, (RTCStream stream) {
+      if (stream.kind == MediaType.SHARE) {
         setState(() {
           shareStream = null;
         });

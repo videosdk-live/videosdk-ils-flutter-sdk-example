@@ -103,18 +103,18 @@ class _AudienceViewState extends State<AudienceView> {
       });
     });
     // Called when hls is started
-    _livestream.on(Events.hlsStateChanged, (Map<String, dynamic> data) {
+    _livestream.on(Events.hlsStateChanged, (String state, HLSUrl? hlsUrl) {
       setState(() {
-        hlsState = data['status'];
+        hlsState = state;
       });
-      if (data['status'] == "HLS_PLAYABLE") {
+      if (state == "HLS_PLAYABLE") {
         setState(() {
-          playbackHlsUrl = data['playbackHlsUrl'];
+          playbackHlsUrl = hlsUrl?.playbackHlsUrl;
           isEnded = false;
           showOverlay = true;
           hideOverlay();
         });
-      } else if (data['status'] == "HLS_STOPPED") {
+      } else if (state == "HLS_STOPPED") {
         setState(() {
           playbackHlsUrl = null;
         });
@@ -122,17 +122,15 @@ class _AudienceViewState extends State<AudienceView> {
     });
     _livestream.on(
         Events.error,
-        (error) => {
+        (VideoSDKError error) => {
               showSnackBarMessage(
-                  message: error['name'].toString() +
-                      " :: " +
-                      error['message'].toString(),
+                  message: "${error.name} :: ${error.message}",
                   context: context)
             });
   }
 
   void subscribeToChatMessages(Room livestream) {
-    livestream.pubSub.subscribe("CHAT", (message) {
+    livestream.pubSub.subscribe("CHAT", PubSubMessageListener(onMessageReceived: (message) {
       if (message.senderId != livestream.localParticipant.id) {
         if (mounted) {
           if (showChatSnackbar) {
@@ -142,9 +140,8 @@ class _AudienceViewState extends State<AudienceView> {
           }
         }
       }
-    }).catchError((Object e) {
+    })).catchError((Object e) {
       log("Subscribe failed: $e");
-      return PubSubMessages(messages: const []);
     });
   }
 

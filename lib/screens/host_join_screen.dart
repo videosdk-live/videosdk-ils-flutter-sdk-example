@@ -25,7 +25,7 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
   bool isMicOn = true;
   bool isCameraOn = true;
 
-  CustomTrack? cameraTrack;
+  CustomStreamTrack? cameraTrack;
   RTCVideoRenderer? cameraRenderer;
 
   TextEditingController livestreamIdTextController = TextEditingController();
@@ -250,10 +250,11 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
   }
 
   void initCameraPreview() async {
-    CustomTrack? track = await VideoSDK.createCameraVideoTrack();
+    await VideoSDK.requestPermissions();
+    CustomStreamTrack track = await VideoSDK.createCameraVideoTrack();
     RTCVideoRenderer render = RTCVideoRenderer();
     await render.initialize();
-    render.setSrcObject(stream: track?.mediaStream);
+    render.setSrcObject(stream: track.mediaStream);
     setState(() {
       cameraTrack = track;
       cameraRenderer = render;
@@ -261,7 +262,7 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
   }
 
   void disposeCameraPreview() {
-    cameraTrack?.dispose();
+    cameraTrack?.stop();
     setState(() {
       cameraRenderer = null;
       cameraTrack = null;
@@ -306,7 +307,7 @@ class _SpeakerJoinScreenState extends State<SpeakerJoinScreen> {
 
   @override
   void dispose() {
-    cameraTrack?.dispose();
+    cameraTrack?.stop();
     super.dispose();
   }
 }

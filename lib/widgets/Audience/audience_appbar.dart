@@ -127,10 +127,10 @@ class AudienceAppBarState extends State<AudienceAppBar> {
       }
     });
 
-    livestream.on(Events.participantLeft, (participantId) {
+    livestream.on(Events.participantLeft, (Participant participant) {
       if (mounted) {
         final newParticipants = _participants;
-        newParticipants.remove(participantId);
+        newParticipants.remove(participant.id);
 
         setState(() => _participants = newParticipants);
       }
