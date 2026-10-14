@@ -61,7 +61,7 @@ class ChatWidget extends StatelessWidget {
                 Container(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "${message.timestamp.toLocal().hour}:${message.timestamp.toLocal().minute}",
+                    "${DateTime.parse(message.timestamp).toLocal().hour}:${DateTime.parse(message.timestamp).toLocal().minute}",
                     textAlign: TextAlign.end,
                     style: TextStyle(
                         color: black400,

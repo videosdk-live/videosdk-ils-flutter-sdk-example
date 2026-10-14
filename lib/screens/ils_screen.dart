@@ -50,18 +50,13 @@ class _ILSScreenState extends State<ILSScreen> {
     Room room = VideoSDK.createRoom(
       roomId: widget.livestreamId,
       token: widget.token,
-      displayName: widget.displayName,
+      participantName: widget.displayName,
       micEnabled: widget.micEnabled,
       camEnabled: widget.camEnabled,
-      maxResolution: 'hd',
+      maxResolution: MaxResolution.HD,
       multiStream: true,
-      defaultCameraIndex: 1,
+      defaultCamera: FacingMode.FRONT,
       mode: widget.mode,
-      notification: const NotificationInfo(
-        title: "Video SDK",
-        message: "Video SDK is sharing screen in the Livestream",
-        icon: "notification_share", // drawable icon name
-      ),
     );
 
     localParticipantMode = widget.mode;
@@ -70,7 +65,20 @@ class _ILSScreenState extends State<ILSScreen> {
     registerLivestreamEvents(room);
 
     // Join Livestream
-    room.join();
+    _join(room);
+  }
+
+  Future<void> _join(Room room) async {
+    try {
+      // v5 no longer asks for camera/mic permission itself
+      if (widget.mode == Mode.SEND_AND_RECV) await VideoSDK.requestPermissions();
+      await room.join();
+    } on VideoSDKError catch (error) {
+      if (mounted) {
+        showSnackBarMessage(
+            message: "${error.name} :: ${error.message}", context: context);
+      }
+    }
   }
 
   @override
@@ -134,17 +142,17 @@ class _ILSScreenState extends State<ILSScreen> {
 
     _livestream.on(
         Events.error,
-        (error) => {
+        (VideoSDKError error) => {
               showSnackBarMessage(
-                  message: "${error['name']} :: ${error['message']}",
+                  message: "${error.name} :: ${error.message}",
                   context: context)
             });
   }
 
   void registerModeListener(Room _livestream) async {
-    PubSubMessages messages = await _livestream.pubSub
+    await _livestream.pubSub
         .subscribe("CHANGE_MODE_${_livestream.localParticipant.id}",
-            (PubSubMessage pubSubMessage) {
+            PubSubMessageListener(onMessageReceived: (pubSubMessage) {
       String message = pubSubMessage.message;
       if (mounted) {
         if (message == "SEND_AND_RECV") {
@@ -187,9 +195,8 @@ class _ILSScreenState extends State<ILSScreen> {
           _livestream.changeMode(Mode.RECV_ONLY);
         }
       }
-    }).catchError((Object e) {
+    })).catchError((Object e) {
       log("Subscribe failed: $e");
-      return PubSubMessages(messages: const []);
     });
   }
 

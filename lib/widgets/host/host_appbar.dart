@@ -166,11 +166,11 @@ class HostAppBarState extends State<HostAppBar> {
   }
 
   void addLivestreamListener(Room livestream) {
-    livestream.on(Events.hlsStateChanged, (Map<String, dynamic> data) {
+    livestream.on(Events.hlsStateChanged, (String state, HLSUrl? hlsUrl) {
       if (mounted) {
         showSnackBarMessage(
             message:
-                "Livestream HLS ${data['status'] == "HLS_STARTING" ? "is starting" : (data['status'] == "HLS_STARTED" || data['status'] == "HLS_PLAYABLE") ? "started" : data['status'] == "HLS_STOPPING" ? "is stopping" : "stopped"}",
+                "Livestream HLS ${state == "HLS_STARTING" ? "is starting" : (state == "HLS_STARTED" || state == "HLS_PLAYABLE") ? "started" : state == "HLS_STOPPING" ? "is stopping" : "stopped"}",
             context: context);
       }
     });
@@ -183,10 +183,10 @@ class HostAppBarState extends State<HostAppBar> {
       }
     });
 
-    livestream.on(Events.participantLeft, (participantId) {
+    livestream.on(Events.participantLeft, (Participant participant) {
       if (mounted) {
         final newParticipants = _participants;
-        newParticipants.remove(participantId);
+        newParticipants.remove(participant.id);
 
         setState(() => _participants = newParticipants);
       }

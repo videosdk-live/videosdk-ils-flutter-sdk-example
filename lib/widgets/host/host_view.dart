@@ -26,10 +26,10 @@ class _SpeakerViewState extends State<HostView> {
   var containerKey = GlobalKey();
   var tapPosition = const Offset(0, 0);
   // Streams
-  Stream? shareStream;
-  Stream? videoStream;
-  Stream? audioStream;
-  Stream? remoteParticipantShareStream;
+  RTCStream? shareStream;
+  RTCStream? videoStream;
+  RTCStream? audioStream;
+  RTCStream? remoteParticipantShareStream;
 
   bool fullScreen = false;
 
@@ -127,8 +127,8 @@ class _SpeakerViewState extends State<HostView> {
               },
 
               onSwitchMicButtonPressed: (details) async {
-                List<AudioDeviceInfo>? outptuDevice =
-                    await VideoSDK.getAudioDevices();
+                List<MicrophoneDeviceInfo>? outptuDevice =
+                    await VideoSDK.getMics();
                 double bottomMargin = (70.0 * outptuDevice!.length);
                 final screenSize = MediaQuery.of(context).size;
                 await showMenu(
@@ -148,14 +148,14 @@ class _SpeakerViewState extends State<HostView> {
                   elevation: 8.0,
                 ).then((value) {
                   if (value != null) {
-                    widget.livestream.switchAudioDevice(value);
+                    widget.livestream.setAudioDevice(value);
                   }
                 });
               },
 
               onSwitchCameraButtonPressed: (details) async {
-                List<VideoDeviceInfo>? outptuDevice =
-                    await VideoSDK.getVideoDevices();
+                List<CameraDeviceInfo>? outptuDevice =
+                    await VideoSDK.getCameras();
                 double bottomMargin = (70.0 * outptuDevice!.length);
                 final screenSize = MediaQuery.of(context).size;
                 await showMenu(
@@ -175,7 +175,7 @@ class _SpeakerViewState extends State<HostView> {
                   elevation: 8.0,
                 ).then((value) {
                   if (value != null) {
-                    widget.livestream.changeCam(value);
+                    widget.livestream.changeCam(deviceId: value.deviceId);
                   }
                 });
               },
@@ -230,16 +230,16 @@ class _SpeakerViewState extends State<HostView> {
 
   void registerLivestreamEvents(Room _livestream) {
     // Called when stream is enabled
-    _livestream.localParticipant.on(Events.streamEnabled, (Stream _stream) {
-      if (_stream.kind == 'video') {
+    _livestream.localParticipant.on(Events.streamEnabled, (RTCStream _stream) {
+      if (_stream.kind == MediaType.VIDEO) {
         setState(() {
           videoStream = _stream;
         });
-      } else if (_stream.kind == 'audio') {
+      } else if (_stream.kind == MediaType.AUDIO) {
         setState(() {
           audioStream = _stream;
         });
-      } else if (_stream.kind == 'share') {
+      } else if (_stream.kind == MediaType.SHARE) {
         setState(() {
           shareStream = _stream;
         });
@@ -247,16 +247,16 @@ class _SpeakerViewState extends State<HostView> {
     });
 
     // Called when stream is disabled
-    _livestream.localParticipant.on(Events.streamDisabled, (Stream _stream) {
-      if (_stream.kind == 'video' && videoStream?.id == _stream.id) {
+    _livestream.localParticipant.on(Events.streamDisabled, (RTCStream _stream) {
+      if (_stream.kind == MediaType.VIDEO && videoStream?.id == _stream.id) {
         setState(() {
           videoStream = null;
         });
-      } else if (_stream.kind == 'audio' && audioStream?.id == _stream.id) {
+      } else if (_stream.kind == MediaType.AUDIO && audioStream?.id == _stream.id) {
         setState(() {
           audioStream = null;
         });
-      } else if (_stream.kind == 'share' && shareStream?.id == _stream.id) {
+      } else if (_stream.kind == MediaType.SHARE && shareStream?.id == _stream.id) {
         setState(() {
           shareStream = null;
         });
@@ -269,28 +269,26 @@ class _SpeakerViewState extends State<HostView> {
           _livestream.participants[_activePresenterId];
 
       // Get Share Stream
-      Stream? _stream = activePresenterParticipant?.streams.values
-          .singleWhere((e) => e.kind == "share");
+      RTCStream? _stream = activePresenterParticipant?.streams.values
+          .singleWhere((e) => e.kind == MediaType.SHARE);
 
       setState(() => remoteParticipantShareStream = _stream);
     });
 
     _livestream.on(
         Events.error,
-        (error) => {
+        (VideoSDKError error) => {
               if (mounted)
                 {
                   showSnackBarMessage(
-                      message: error['name'].toString() +
-                          " :: " +
-                          error['message'].toString(),
+                      message: "${error.name} :: ${error.message}",
                       context: context)
                 }
             });
   }
 
   void subscribeToChatMessages(Room livestream) {
-    livestream.pubSub.subscribe("CHAT", (message) {
+    livestream.pubSub.subscribe("CHAT", PubSubMessageListener(onMessageReceived: (message) {
       if (message.senderId != livestream.localParticipant.id) {
         if (mounted) {
           if (showChatSnackbar) {
@@ -300,12 +298,11 @@ class _SpeakerViewState extends State<HostView> {
           }
         }
       }
-    }).catchError((Object e) {
+    })).catchError((Object e) {
       log("Subscribe failed: $e");
-      return PubSubMessages(messages: const []);
     });
 
-    livestream.pubSub.subscribe("RAISE_HAND", (message) {
+    livestream.pubSub.subscribe("RAISE_HAND", PubSubMessageListener(onMessageReceived: (message) {
       if (message.senderId != livestream.localParticipant.id) {
         if (mounted) {
           if (showChatSnackbar) {
@@ -319,9 +316,8 @@ class _SpeakerViewState extends State<HostView> {
           }
         }
       }
-    }).catchError((Object e) {
+    })).catchError((Object e) {
       log("Subscribe failed: $e");
-      return PubSubMessages(messages: const []);
     });
   }
 

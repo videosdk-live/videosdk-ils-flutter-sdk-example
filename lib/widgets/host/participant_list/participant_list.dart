@@ -114,10 +114,10 @@ class _ParticipantListState extends State<ParticipantList> {
       }
     });
 
-    livestream.on(Events.participantLeft, (participantId) {
+    livestream.on(Events.participantLeft, (Participant participant) {
       if (mounted) {
         final newParticipants = _participants;
-        newParticipants.remove(participantId);
+        newParticipants.remove(participant.id);
 
         setState(() => _participants = newParticipants);
       }
@@ -125,7 +125,7 @@ class _ParticipantListState extends State<ParticipantList> {
   }
 
   void addRaiseHandListener(Room livestream) {
-    livestream.pubSub.subscribe("RAISE_HAND", (message) {
+    livestream.pubSub.subscribe("RAISE_HAND", PubSubMessageListener(onMessageReceived: (message) {
       List<String> participants = raisedHandParticipant;
       setState(() {
         participants.add(message.senderId);
@@ -136,9 +136,8 @@ class _ParticipantListState extends State<ParticipantList> {
           participants.remove(message.senderId);
         });
       });
-    }).catchError((Object e) {
+    })).catchError((Object e) {
       log("Subscribe failed: $e");
-      return PubSubMessages(messages: const []);
     });
   }
 }

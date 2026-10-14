@@ -31,8 +31,12 @@ class _ChatViewState extends State<ChatView> {
   // MessageTextController
   final msgTextController = TextEditingController();
 
-  // PubSubMessages
-  PubSubMessages? messages;
+  final List<PubSubMessage> messages = [];
+  late final PubSubMessageListener _chatListener = PubSubMessageListener(
+    onMessageReceived: (message) => setState(() => messages.add(message)),
+    onOldMessagesReceived: (old, _) =>
+        setState(() => messages.insertAll(0, old)),
+  );
   bool isRaisedHand = false;
 
   @override
@@ -41,8 +45,7 @@ class _ChatViewState extends State<ChatView> {
 
     // Subscribing 'CHAT' Topic
     widget.livestream.pubSub
-        .subscribe("CHAT", messageHandler)
-        .then((value) => setState((() => messages = value)))
+        .subscribe("CHAT", _chatListener)
         .catchError((Object e) => log("Subscribe failed: $e"));
   }
 
@@ -91,23 +94,21 @@ class _ChatViewState extends State<ChatView> {
             child: Column(
               children: [
                 Expanded(
-                  child: messages == null
-                      ? const Center(child: CircularProgressIndicator())
-                      : SingleChildScrollView(
-                          reverse: true,
-                          child: Column(
-                            children: messages!.messages
-                                .map(
-                                  (e) => ChatWidget(
-                                    orientation: widget.orientation,
-                                    message: e,
-                                    isLocalParticipant: e.senderId ==
-                                        widget.livestream.localParticipant.id,
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    child: Column(
+                      children: messages
+                          .map(
+                            (e) => ChatWidget(
+                              orientation: widget.orientation,
+                              message: e,
+                              isLocalParticipant: e.senderId ==
+                                  widget.livestream.localParticipant.id,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
                 ),
                 Row(
                   children: [
@@ -187,8 +188,8 @@ class _ChatViewState extends State<ChatView> {
                           if (!isRaisedHand) {
                             widget.livestream.pubSub
                                 .publish("RAISE_HAND", "message")
-                                .catchError((Object e) =>
-                                    log("Publish failed: $e"));
+                                .catchError(
+                                    (Object e) => log("Publish failed: $e"));
                             setState(() {
                               isRaisedHand = true;
                             });
@@ -226,14 +227,10 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void messageHandler(PubSubMessage message) {
-    setState(() => messages!.messages.add(message));
-  }
-
   @override
   void dispose() {
     widget.livestream.pubSub
-        .unsubscribe("CHAT", messageHandler)
+        .unsubscribe("CHAT", _chatListener)
         .catchError((Object e) => log("Unsubscribe failed: $e"));
     super.dispose();
   }
