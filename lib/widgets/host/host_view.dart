@@ -148,7 +148,7 @@ class _SpeakerViewState extends State<HostView> {
                   elevation: 8.0,
                 ).then((value) {
                   if (value != null) {
-                    widget.livestream.setAudioDevice(value);
+                    widget.livestream.changeMic(deviceId: value.deviceId);
                   }
                 });
               },
